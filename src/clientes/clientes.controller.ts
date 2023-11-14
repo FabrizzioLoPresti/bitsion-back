@@ -19,7 +19,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Post()
   async create(
     @Body() createClienteDto: CreateClienteDto,
