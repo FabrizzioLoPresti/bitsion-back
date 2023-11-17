@@ -8,17 +8,21 @@ import {
   Delete,
   Res,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ClientesService } from './clientes.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 
+@ApiTags('Clientes')
 @Controller('clientes')
 export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
   @Post()
   async create(
@@ -77,7 +81,8 @@ export class ClientesController {
     }
   }
 
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -104,10 +109,17 @@ export class ClientesController {
     }
   }
 
-  // @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response, @Request() req) {
     try {
+      const { sub } = req.user;
+
+      if (sub === +id) {
+        throw new Error('No puedes eliminar tu propio usuario');
+      }
+
       const cliente = await this.clientesService.remove(+id);
 
       res.status(200).json(cliente);
